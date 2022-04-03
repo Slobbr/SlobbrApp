@@ -51,7 +51,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
   }
 
   Future imgFromCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
 
     setState(() {
       if (pickedFile != null) {
