@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase/supabase.dart';
 import 'package:supabase_quickstart/components/auth_required_state.dart';
 import 'package:supabase_quickstart/utils/colors.dart';
@@ -14,7 +18,10 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends AuthRequiredState<AccountPage> {
   final _usernameController = TextEditingController();
   final _websiteController = TextEditingController();
+  final _avatarController = TextEditingController();
   var _loading = false;
+  final ImagePicker _picker = ImagePicker();
+  File? _photo;
 
   /// Called once a user id is received within `onAuthenticated()`
   Future<void> _getProfile(String userId) async {
@@ -35,6 +42,7 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
     if (data != null) {
       _usernameController.text = (data['username'] ?? '') as String;
       _websiteController.text = (data['website'] ?? '') as String;
+      _avatarController.text = (data['avatar_url'] ?? '') as String;
     }
     setState(() {
       _loading = false;
@@ -67,6 +75,69 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
     });
   }
 
+  Future<void> _updateAvatar() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+
+    setState(() {
+      if (pickedFile != null) {
+        _photo = File(pickedFile.path);
+        _cropImage();
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future<void> _cropImage() async {
+    File? croppedFile = await ImageCropper().cropImage(
+        sourcePath: _photo!.path,
+        aspectRatioPresets: Platform.isAndroid
+            ? [
+          CropAspectRatioPreset.ratio4x3
+        ]
+            : [
+          CropAspectRatioPreset.ratio4x3
+        ],
+        androidUiSettings: const AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: MColors.primaryPurple,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          title: 'Cropper',
+        ));
+    if (croppedFile != null) {
+      _photo = croppedFile;
+      final res = await supabase.storage.from('avatars').update('${supabase.auth.currentUser!.id}.jpg', _photo!, fileOptions: FileOptions(cacheControl: '3600', upsert: false) );
+      final err = res.error;
+
+      if(err != null){
+        context.showErrorSnackBar(message: err.message);
+      }else {
+        final photo = _photo;
+        final user = supabase.auth.currentUser;
+        final updates = {
+          'id': user!.id,
+          'avatar_url': 'https://yoepxzzytgwaodkdamsr.supabase.co/storage/v1/object/sign/avatars/${supabase.auth
+              .currentUser!.id}.jpg',
+          'updated_at': DateTime.now().toIso8601String(),
+        };
+        final response = await supabase.from('profiles')
+            .upsert(updates)
+            .execute();
+        final error = response.error;
+        if (error != null) {
+          context.showErrorSnackBar(message: error.message);
+        } else {
+          setState(() {
+            _avatarController.text = updates['avatar_url'] as String;
+          });
+        }
+      }
+    }
+  }
+
   Future<void> _signOut() async {
     final response = await supabase.auth.signOut();
     final error = response.error;
@@ -87,6 +158,7 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
   void dispose() {
     _usernameController.dispose();
     _websiteController.dispose();
+    _avatarController.dispose();
     super.dispose();
   }
 
@@ -112,16 +184,21 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
 
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage('https://www.newscientist.nl/app/uploads/ThinkstockPhotos-516446406-1080x1080.jpg'),
-                  maxRadius: 50,
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(_avatarController.text ?? 'http://www.zooniverse.org/assets/simple-avatar.png'),
+                    maxRadius: 50,
+                  ),
+                  onTap: () {
+                    _updateAvatar();
+                  },
                 )
               ),
 
               SizedBox(height: 10),
 
               Text(
-                '${supabase.auth.currentUser?.email ?? ''}',
+                supabase.auth.currentUser!.email ?? '',
                 style: boldFont(MColors.textDark, 16.0),
                 textAlign: TextAlign.start,
               ),
