@@ -40,6 +40,9 @@ dependencies:
   google_fonts: ^2.3.1
   location: ^4.3.0
   geocoder_flutter: ^0.2.3-prerelease
+  image_picker: ^0.8.4+11
+  uuid: ^3.0.6
+  image_cropper: ^1.5.1
 
 dev_dependencies:
   flutter_test:

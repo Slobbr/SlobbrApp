@@ -71,7 +71,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: MColors.primaryPurple,
         child: const Icon(Icons.add, color: MColors.primaryWhite),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/addoffer');
+        },
       ),
       body: primaryContainer(
         Column(
@@ -92,6 +94,8 @@ class _HomePageState extends State<HomePage> {
                 var address;
                 if(snapshot.hasData){
                   address = "${snapshot.data!.thoroughfare} ${snapshot.data!.featureName}, ${snapshot.data!.locality}";
+                }else {
+                  address = "Getting location...";
                 }
 
                 return Container(

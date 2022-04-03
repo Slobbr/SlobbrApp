@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_quickstart/pages/add_offer.dart';
 import 'package:supabase_quickstart/pages/getting_started/login_screen.dart';
 import 'package:supabase_quickstart/pages/getting_started/register_screen.dart';
 import 'package:supabase_quickstart/pages/tab_screens/tabLayout.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/account': (_) => const AccountPage(),
         '/register': (_) => const RegisterScreen(),
         '/tabs': (_) => const TabLayout(),
+        '/addoffer': (_) => const AddOfferScreen(),
       },
     );
   }
