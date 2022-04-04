@@ -1,4 +1,4 @@
-# supabase_quickstart
+# Slobbr App
 
 A new Flutter project.
 
