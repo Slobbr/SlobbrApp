@@ -6,19 +6,28 @@ import 'package:supabase_quickstart/utils/constants.dart';
 import '../../components/auth_required_state.dart';
 import '../starRatings.dart';
 
-class DetailsScreen extends StatefulWidget {
-  final int offerId;
-  final String userId;
-
-  const DetailsScreen({Key? key, required this.offerId, required this.userId}) : super(key: key);
-
-  @override
-  State<DetailsScreen> createState() => _DetailsScreenState();
+enum Status {
+  accepted,
+  declined,
+  pending,
 }
 
-class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
+class DetailsOrderScreen extends StatefulWidget {
+  final int offerId;
+  final String userId;
+  final String orderStatus;
+  final int orderId;
+
+  const DetailsOrderScreen({Key? key, required this.offerId, required this.userId, required this.orderStatus, required this.orderId}) : super(key: key);
+
+  @override
+  State<DetailsOrderScreen> createState() => _DetailsOrderScreenState();
+}
+
+class _DetailsOrderScreenState extends AuthRequiredState<DetailsOrderScreen> {
   dynamic _offerData = null;
   dynamic _userData = null;
+  dynamic _orderStatus = null;
 
   Future<void> _getOfferData() async {
     final response = await supabase.from('offers').select().match({'id': widget.offerId}).execute();
@@ -44,26 +53,14 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     }
   }
 
-  Future<void> _startOrder() async {
-    final offerData = _offerData;
-    final user_id = supabase.auth.currentUser?.id;
-    final updates = {
-      'created_at': DateTime.now().toIso8601String(),
-      'user_id': user_id,
-      'order_username': _userData['username'],
-      'offer_id': offerData['id'],
-      'offer_data': offerData,
-      'accepted': 'pending',
-      'completed': false,
-    };
-    final res = await supabase.from('orders').upsert(updates).execute();
+  Future<void> _cancelOrder() async {
+    final res = await supabase.from('orders').delete().match({'id': widget.orderId}).execute();
     final err = res.error;
     if (err != null) {
       context.showErrorSnackBar(message: err.message);
     }else {
-      Navigator.of(context).pop();
+      Navigator.pop(context);
     }
-
   }
 
   @override
@@ -71,6 +68,17 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     super.initState();
     _getOfferData();
     _getUserData();
+    switch(widget.orderStatus){
+      case "pending":
+        _orderStatus = 'In afwachting';
+        break;
+      case "accepted":
+        _orderStatus = 'Geaccepteerd';
+        break;
+      case "declined":
+        _orderStatus = 'Geweigerd';
+        break;
+    }
   }
 
   @override
@@ -116,18 +124,18 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
               )
             ];
           },
-          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _userData == null ? Center(child: CircularProgressIndicator()): _buildProductDetails(_offerData, _userData),
+          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _userData == null ? Center(child: CircularProgressIndicator()): _buildProductDetails(_offerData, _userData, _orderStatus),
         ),
         bottomNavigationBar: Container(
           color: MColors.primaryWhiteSmoke,
           padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 15.0),
           child: primaryButtonPurple(
             Text(
-              "Bestellen",
+              _orderStatus == "accepted" ? "Verwijderen" : "Annuleren",
               style: boldFont(MColors.primaryWhite, 16.0),
             ),
             () {
-              _startOrder();
+              _cancelOrder();
             },
           ),
         ),
@@ -135,7 +143,7 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     }
   }
 
-  Widget _buildProductDetails(prodDetails, userDetails){
+  Widget _buildProductDetails(prodDetails, userDetails, orderStatus) {
     return Container(
       decoration: const BoxDecoration(
         color: MColors.primaryWhiteSmoke,
@@ -211,6 +219,39 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
                   )
                 ]
               )
+            ),
+            Container(
+                child: ExpansionTile(
+                    title: Text(
+                      "Status",
+                      style: boldFont(MColors.textDark, 16.0),
+                    ),
+                    children: <Widget>[
+                      Container(
+                          padding: const EdgeInsets.only(
+                              left: 30.0,
+                              bottom: 10.0,
+                              right: 30.0
+                          ),
+                          child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                    child: Text(
+                                      "Huidige status",
+                                      style: normalFont(MColors.textDark, 16.0),
+                                    )
+                                ),
+                                Expanded(
+                                    child: Text(
+                                      orderStatus.toString(),
+                                      style: normalFont(MColors.textGrey, 14.0),
+                                    )
+                                )
+                              ]
+                          )
+                      )
+                    ]
+                )
             )
           ]
         )

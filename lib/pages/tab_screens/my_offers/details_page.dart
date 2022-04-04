@@ -3,21 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:supabase_quickstart/utils/colors.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
-import '../../components/auth_required_state.dart';
-import '../starRatings.dart';
+import '../../../components/auth_required_state.dart';
+import 'details_order_page.dart';
 
-class DetailsScreen extends StatefulWidget {
+
+class OfferDetailsScreen extends StatefulWidget {
   final int offerId;
   final String userId;
 
-  const DetailsScreen({Key? key, required this.offerId, required this.userId}) : super(key: key);
+  const OfferDetailsScreen({Key? key, required this.offerId, required this.userId}) : super(key: key);
 
   @override
-  State<DetailsScreen> createState() => _DetailsScreenState();
+  State<OfferDetailsScreen> createState() => _OfferDetailsScreenState();
 }
 
-class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
+class _OfferDetailsScreenState extends AuthRequiredState<OfferDetailsScreen> {
   dynamic _offerData = null;
+  dynamic _orderList = null;
   dynamic _userData = null;
 
   Future<void> _getOfferData() async {
@@ -28,6 +30,20 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     }else {
       setState(() {
         _offerData = response.data[0];
+      });
+    }
+  }
+
+  Future<void> _getOrderList() async {
+    final userId = supabase.auth.currentUser?.id;
+    final response = await supabase.from('orders').select().match(
+        {'offer_id': widget.offerId}).execute();
+    final error = response.error;
+    if (error != null) {
+      print(error);
+    } else {
+      setState(() {
+        _orderList = response.data;
       });
     }
   }
@@ -44,24 +60,19 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     }
   }
 
-  Future<void> _startOrder() async {
-    final offerData = _offerData;
-    final user_id = supabase.auth.currentUser?.id;
-    final updates = {
-      'created_at': DateTime.now().toIso8601String(),
-      'user_id': user_id,
-      'order_username': _userData['username'],
-      'offer_id': offerData['id'],
-      'offer_data': offerData,
-      'accepted': 'pending',
-      'completed': false,
-    };
-    final res = await supabase.from('orders').upsert(updates).execute();
+  Future<void> _removeOrder() async {
+    final res = await supabase.from('orders').delete().match({'offer_id': widget.offerId}).execute();
     final err = res.error;
     if (err != null) {
       context.showErrorSnackBar(message: err.message);
     }else {
-      Navigator.of(context).pop();
+      final res = await supabase.from('offers').delete().match({'id': _offerData['id']}).execute();
+      final err = res.error;
+      if (err != null) {
+        context.showErrorSnackBar(message: err.message);
+      }else {
+        Navigator.pop(context);
+      }
     }
 
   }
@@ -71,6 +82,7 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     super.initState();
     _getOfferData();
     _getUserData();
+    _getOrderList();
   }
 
   @override
@@ -116,18 +128,18 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
               )
             ];
           },
-          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _userData == null ? Center(child: CircularProgressIndicator()): _buildProductDetails(_offerData, _userData),
+          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _userData == null ? Center(child: CircularProgressIndicator()): _buildProductDetails(_offerData, _userData, _orderList),
         ),
         bottomNavigationBar: Container(
           color: MColors.primaryWhiteSmoke,
           padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 15.0),
           child: primaryButtonPurple(
             Text(
-              "Bestellen",
+              "Verwijderen",
               style: boldFont(MColors.primaryWhite, 16.0),
             ),
             () {
-              _startOrder();
+              _removeOrder();
             },
           ),
         ),
@@ -135,7 +147,7 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
     }
   }
 
-  Widget _buildProductDetails(prodDetails, userDetails){
+  Widget _buildProductDetails(prodDetails, userDetails, orderList){
     return Container(
       decoration: const BoxDecoration(
         color: MColors.primaryWhiteSmoke,
@@ -211,6 +223,52 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
                   )
                 ]
               )
+            ),
+            Container(
+                child: ExpansionTile(
+                    title: Text(
+                      "Bestellingen",
+                      style: boldFont(MColors.textDark, 16.0),
+                    ),
+                    children: [
+                      ListView.builder(
+                        primary: false,
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: orderList == null ? 0 : orderList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Map order = orderList[index];
+                          return Row(
+                            children: <Widget>[
+                              Expanded(
+                                  child: Text(
+                                    "Gebruikersnaam",
+                                    style: normalFont(MColors.textDark, 16.0),
+                                  )
+                              ),
+                              Expanded(
+                              child: GestureDetector(
+                              child: Text(
+                                order['order_username'],
+                                style: normalFont(MColors.textGrey, 14.0),
+                              ),
+                             onTap: () {
+                               Navigator.of(context).push(
+                                 MaterialPageRoute(
+                                   builder: (BuildContext context) {
+                                     return OfferDetailsOrderScreen(offerId: order['offer_id'], userId: supabase.auth.currentUser!.id, orderStatus: order['accepted'], orderId: order['id'],);
+                                   },
+                                 ),
+                               );
+                              },
+                          ),
+                          )
+                          ]
+                          );
+                        }
+                      )
+                    ]
+                )
             )
           ]
         )

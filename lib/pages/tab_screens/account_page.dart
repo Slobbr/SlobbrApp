@@ -205,6 +205,15 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
 
               SizedBox(height: 24.0),
 
+              primaryButtonWhiteSmoke(Text(
+                "Mijn aanbiedingen",
+                style: normalFont(MColors.textDark, 16.0),
+              ), () {
+                Navigator.pushNamed(context, '/myoffers');
+              }),
+
+              SizedBox(height: 24.0),
+
               primaryButtonPurple(
                 Text(
                   "Uitloggen",

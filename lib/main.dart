@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/pages/add_offer.dart';
 import 'package:supabase_quickstart/pages/getting_started/login_screen.dart';
 import 'package:supabase_quickstart/pages/getting_started/register_screen.dart';
+import 'package:supabase_quickstart/pages/tab_screens/my_offers/my_offers_page.dart';
 import 'package:supabase_quickstart/pages/tab_screens/tabLayout.dart';
 import 'package:supabase_quickstart/utils/supabase_conf.dart';
 import 'pages/tab_screens/account_page.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/tabs': (_) => const TabLayout(),
         '/addoffer': (_) => const AddOfferScreen(),
+        '/myoffers': (_) => const MyOfferPage(),
       },
     );
   }

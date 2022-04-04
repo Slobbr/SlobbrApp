@@ -35,6 +35,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
   late final MaskedTextController _priceController;
+  late final TextEditingController _addressController;
 
   pickedImageWidget(BuildContext context){
     if(_photo != null){
@@ -139,6 +140,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
         'name': _nameController.text,
         'description': _descriptionController.text,
         'price': _priceController.text,
+        'address': _addressController.text,
         'created_at': DateTime.now().toIso8601String(),
         'lat': locationData?.latitude,
         'lng': locationData?.longitude,
@@ -160,6 +162,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
     _nameController = TextEditingController();
     _descriptionController = TextEditingController();
     _priceController  = MaskedTextController(mask: '€00.00');
+    _addressController = TextEditingController();
     super.initState();
   }
 
@@ -249,6 +252,56 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
 
             TextFormField(
               controller: _descriptionController,
+              decoration: InputDecoration(
+                labelStyle: normalFont(null, 14.0),
+                contentPadding: EdgeInsets.symmetric(horizontal: 25.0),
+                fillColor: MColors.primaryWhite,
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                filled: true,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: 0.50 == 0.0 ? Colors.transparent : MColors.textGrey,
+                    width: 0.50,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: Colors.red,
+                    width: 1.0,
+                  ),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: Colors.red,
+                    width: 1.0,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: MColors.primaryPurple,
+                    width: 1.0,
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(height: 20),
+
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(bottom: 5.0),
+              child: Text(
+                "Adres",
+                style: normalFont(MColors.textGrey, null),
+              ),
+            ),
+
+            TextFormField(
+              controller: _addressController,
               decoration: InputDecoration(
                 labelStyle: normalFont(null, 14.0),
                 contentPadding: EdgeInsets.symmetric(horizontal: 25.0),
