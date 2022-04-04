@@ -142,8 +142,6 @@ Widget offerPage(offerList, context){
                                       ]
                                     )
                                   ),
-                                  Spacer(),
-                                  //TODO: add builder
                                 ]
                               )
                             )
