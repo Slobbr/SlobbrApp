@@ -51,19 +51,30 @@ class _RegisterScreenState extends AuthState<RegisterScreen> {
         if (updateError != null) {
           context.showErrorSnackBar(message: updateError.message);
         } else {
-          Navigator.pushNamed(context, '/tabs');
+          final cartUpdates = {
+            'user_id': user!.id,
+          };
+          final cartResponse = await supabase.from('carts')
+              .upsert(cartUpdates)
+              .execute();
+          final cartError = cartResponse.error;
+          if (cartError != null) {
+            context.showErrorSnackBar(message: cartError.message);
+          } else {
+            Navigator.pushNamed(context, '/tabs');
+          }
         }
       }
+    }
+
 
       setState(() {
         _isLoading = false;
       });
     }
-  }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();

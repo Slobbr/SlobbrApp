@@ -8,8 +8,9 @@ import '../starRatings.dart';
 
 class DetailsScreen extends StatefulWidget {
   final int offerId;
+  final String userId;
 
-  const DetailsScreen({Key? key, required this.offerId}) : super(key: key);
+  const DetailsScreen({Key? key, required this.offerId, required this.userId}) : super(key: key);
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -18,7 +19,6 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
   dynamic _offerData = null;
   dynamic _userData = null;
-  dynamic _reviewData = null;
 
   Future<void> _getOfferData() async {
     final response = await supabase.from('offers').select().match({'id': widget.offerId}).execute();
@@ -31,29 +31,38 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
       });
     }
   }
-  
-  Future<void> _getReviewData(double uid) async {
-    final response = await supabase.from('reviews').select().match({'reviewed_id': uid}).execute();
-    final error = response.error;
-    if (error != null) {
-      print('Error: ${error.message}');
+
+  Future<void> _getUserData() async {
+    final res = await supabase.from('profiles').select().match({'id': widget.userId}).execute();
+    final err = res.error;
+    if (err != null) {
+      context.showErrorSnackBar(message: err.message);
     }else {
       setState(() {
-        _reviewData = response.data;
+        _userData = res.data[0];
       });
     }
   }
 
-  Future<void> _getUserData() async {
-    final response = await supabase.from('users').select().match({'id': _offerData['user_id']}).execute();
-    final error = response.error;
-    if (error != null) {
-      print('Error: ${error.message}');
+  Future<void> _startOrder() async {
+    final offerData = _offerData;
+    final user_id = supabase.auth.currentUser?.id;
+    final updates = {
+      'created_at': DateTime.now().toIso8601String(),
+      'user_id': user_id,
+      'offer_id': offerData['id'],
+      'offer_data': offerData,
+      'accepted': false,
+      'completed': false,
+    };
+    final res = await supabase.from('orders').upsert(updates).execute();
+    final err = res.error;
+    if (err != null) {
+      context.showErrorSnackBar(message: err.message);
     }else {
-      setState(() {
-        _userData = response.data[0];
-      });
+      Navigator.of(context).pop();
     }
+
   }
 
   @override
@@ -106,7 +115,7 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
               )
             ];
           },
-          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _buildProductDetails(_offerData),
+          body: _offerData == null ? Center(child: CircularProgressIndicator()) : _userData == null ? Center(child: CircularProgressIndicator()): _buildProductDetails(_offerData, _userData),
         ),
         bottomNavigationBar: Container(
           color: MColors.primaryWhiteSmoke,
@@ -116,14 +125,16 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
               "Bestellen",
               style: boldFont(MColors.primaryWhite, 16.0),
             ),
-            () {},
+            () {
+              _startOrder();
+            },
           ),
         ),
       );
     }
   }
 
-  Widget _buildProductDetails(prodDetails){
+  Widget _buildProductDetails(prodDetails, userDetails){
     return Container(
       decoration: const BoxDecoration(
         color: MColors.primaryWhiteSmoke,
@@ -166,6 +177,39 @@ class _DetailsScreenState extends AuthRequiredState<DetailsScreen> {
                 prodDetails['description'],
                 style: normalFont(MColors.textGrey, 14.0),
               ),
+            ),
+            Container(
+              child: ExpansionTile(
+                title: Text(
+                  "Details",
+                  style: boldFont(MColors.textDark, 16.0),
+                ),
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.only(
+                      left: 30.0,
+                      bottom: 10.0,
+                      right: 30.0
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: Text(
+                              "Aanbieder",
+                              style: normalFont(MColors.textDark, 16.0),
+                            )
+                        ),
+                        Expanded(
+                            child: Text(
+                              userDetails['username'],
+                              style: normalFont(MColors.textGrey, 14.0),
+                            )
+                        )
+                        ]
+                    )
+                  )
+                ]
+              )
             )
           ]
         )

@@ -230,3 +230,30 @@ Widget primaryTextField(
     ),
   );
 }
+
+Widget backgroundDismiss(AlignmentGeometry alignment) {
+  return Container(
+    decoration: BoxDecoration(
+      color: MColors.primaryWhiteSmoke,
+      borderRadius: BorderRadius.all(
+        Radius.circular(10.0),
+      ),
+    ),
+    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+    alignment: alignment,
+    child: Container(
+      height: double.infinity,
+      width: 50.0,
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.all(
+          Radius.circular(10.0),
+        ),
+      ),
+      child: Icon(
+        Icons.delete_outline,
+        color: Colors.white,
+      ),
+    ),
+  );
+}

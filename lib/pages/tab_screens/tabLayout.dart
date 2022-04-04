@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_quickstart/components/auth_state.dart';
-import 'package:supabase_quickstart/pages/account_page.dart';
+import 'package:supabase_quickstart/pages/tab_screens/account_page.dart';
 import 'package:supabase_quickstart/pages/tab_screens/home_page.dart';
+import 'package:supabase_quickstart/pages/tab_screens/my_order_page.dart';
 import 'package:supabase_quickstart/utils/colors.dart';
 
 class TabLayout extends StatefulWidget {
@@ -25,7 +26,7 @@ class _TabLayoutState extends AuthState<TabLayout> {
             onPageChanged: onPageChanged,
             children: <Widget>[
               HomePage(),
-              AccountPage(),
+              MyOrderPage(),
               AccountPage(),
             ],
           ),

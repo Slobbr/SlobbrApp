@@ -5,7 +5,7 @@ import 'package:supabase_quickstart/pages/getting_started/login_screen.dart';
 import 'package:supabase_quickstart/pages/getting_started/register_screen.dart';
 import 'package:supabase_quickstart/pages/tab_screens/tabLayout.dart';
 import 'package:supabase_quickstart/utils/supabase_conf.dart';
-import 'pages/account_page.dart';
+import 'pages/tab_screens/account_page.dart';
 import 'pages/getting_started/intro_screen.dart';
 import 'pages/splash_page.dart';
 

@@ -62,7 +62,7 @@ class HorizontalItemCard extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return DetailsScreen(offerId: place['id'],);
+                return DetailsScreen(offerId: place['id'], userId: place['user_id'],);
               },
             ),
           );

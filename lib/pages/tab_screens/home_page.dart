@@ -119,16 +119,6 @@ class _HomePageState extends AuthState<HomePage> {
     return Scaffold(
       backgroundColor: MColors.primaryWhiteSmoke,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: MColors.primaryWhiteSmoke,
-        elevation: 0,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined, color: MColors.textDark),
-            onPressed: () {},
-          )
-        ]
-      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: MColors.primaryPurple,
         child: const Icon(Icons.add, color: MColors.primaryWhite),
@@ -141,7 +131,7 @@ class _HomePageState extends AuthState<HomePage> {
             child: ListView(
                 children: <Widget>[
                   Container(
-                    padding: const EdgeInsets.only(top: 20.0),
+                    padding: const EdgeInsets.only(top: 100.0),
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Wat eten we vandaag?",
