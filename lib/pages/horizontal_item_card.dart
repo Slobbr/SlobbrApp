@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_quickstart/pages/tab_screens/details_page.dart';
 
 //import '../screens/details.dart';
 
@@ -58,13 +59,13 @@ class HorizontalItemCard extends StatelessWidget {
           ),
         ),
         onTap: () {
-          /* Navigator.of(context).push(
+          Navigator.of(context).push(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return Details(dishIndex: this.dishIndex,);
+                return DetailsScreen(offerId: place['id'],);
               },
             ),
-          ); */
+          );
         },
       ),
     );

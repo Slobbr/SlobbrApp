@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:location/location.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/components/auth_required_state.dart';
 import 'package:supabase_quickstart/utils/colors.dart';
@@ -32,7 +34,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
 
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
-  late final TextEditingController _priceController;
+  late final MaskedTextController _priceController;
 
   pickedImageWidget(BuildContext context){
     if(_photo != null){
@@ -91,7 +93,36 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
     }
   }
 
+  Future<LocationData?> getCurrentLocationData() async {
+
+    Location location = new Location();
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if(!_serviceEnabled){
+      _serviceEnabled = await location.requestService();
+      if(!_serviceEnabled){
+        return null;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if(_permissionGranted == PermissionStatus.denied){
+      _permissionGranted = await location.requestPermission();
+      if(_permissionGranted != PermissionStatus.granted){
+        return null;
+      }
+    }
+
+    _locationData = await location.getLocation();
+    return _locationData;
+
+  }
+
   Future<void> addOffer(BuildContext context) async {
+    final LocationData? locationData = await getCurrentLocationData();
     final photo = _photo;
     final photoUuid = uuid.v1();
     final res = await supabase.storage.from('offer-images').upload('${supabase.auth.currentUser!.id}/$photoUuid.png', photo!, fileOptions: FileOptions(
@@ -109,6 +140,8 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
         'description': _descriptionController.text,
         'price': _priceController.text,
         'created_at': DateTime.now().toIso8601String(),
+        'lat': locationData?.latitude,
+        'lng': locationData?.longitude,
       };
       final response = await supabase.from('offers').upsert(updates).execute();
       final err = response.error;
@@ -126,7 +159,7 @@ class _AddOfferScreenState extends AuthRequiredState<AddOfferScreen> {
     state = AppState.free;
     _nameController = TextEditingController();
     _descriptionController = TextEditingController();
-    _priceController = TextEditingController();
+    _priceController  = MaskedTextController(mask: '€00.00');
     super.initState();
   }
 

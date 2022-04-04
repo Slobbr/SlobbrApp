@@ -23,7 +23,7 @@ class _IntroScreenState extends State<IntroScreen> {
           Container(
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
-              "assets/images/pets.svg",
+              "assets/images/landing2.svg",
               height: 200,
             ),
           ),

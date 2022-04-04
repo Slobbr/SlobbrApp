@@ -10,6 +10,7 @@ import 'package:geocoder_flutter/geocoder.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 import '../horizontal_item_card.dart';
+import '../vertical_item_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -76,16 +77,32 @@ class _HomePageState extends AuthState<HomePage> {
 
   buildHorizontalList(BuildContext context){
     return Container(
-      padding: EdgeInsets.only(top: 10.0),
+      padding: EdgeInsets.only(top: 20.0),
       height: 260.0,
       width: MediaQuery.of(context).size.width,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         primary: false,
-        itemCount: _offers == null ? 0 : _offers.length,
+        itemCount: _offers == null ? 0 : _offers.length > 4 ? 4 : _offers.length,
         itemBuilder: (BuildContext context, int index) {
           Map place = _offers[index];
           return HorizontalItemCard(place: place, dishIndex: index,);
+        },
+      ),
+    );
+  }
+
+  buildVerticalList() {
+    return Padding(
+      padding: EdgeInsets.only(top: 20.0),
+      child: ListView.builder(
+        primary: false,
+        physics: NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: _offers == null ? 0 : _offers.length,
+        itemBuilder: (BuildContext context, int index) {
+          Map place = _offers[index];
+          return VerticalItemCard(place: place, dishIndex: index);
         },
       ),
     );
@@ -154,6 +171,7 @@ class _HomePageState extends AuthState<HomePage> {
                       }
                   ),
                   buildHorizontalList(context),
+                  buildVerticalList(),
                 ]
             ),
             onRefresh: _getOffers)
